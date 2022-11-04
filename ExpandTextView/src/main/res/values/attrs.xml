@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <color name="expandColor">#999999</color>
+    <declare-styleable name="ExpandTextView">
+        <attr format="integer" name="maxToExpand"/>
+        <attr format="color" name="expandTextColor"/>
+        <attr format="boolean" name="expanded"/>
+        <attr format="string" name="expandText"/>
+		<attr format="string" name="collapseText"/>
+    </declare-styleable>
+</resources>

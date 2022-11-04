@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.widget.LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:orientation="vertical">
+    
+    <smith.lib.views.expandtextview.ExpandTextView
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:padding="10dp"
+        android:text="Praesent efficitur velit vel tellus venenatis, sed imperdiet nunc varius. Suspendisse quis congue nisl, vel porta ante. Donec volutpat, turpis eget auctor elementum, libero odio faucibus purus, eu pellentesque nisi ligula vitae tellus. Sed consequat in nulla eu faucibus. Etiam vulputate diam non neque aliquet feugiat eu id turpis. Sed dictum mauris vel viverra vulputate. Aliquam imperdiet tempor odio sit amet tristique. Praesent quis neque vel turpis volutpat finibus. Vivamus non ex nec turpis molestie venenatis. Quisque condimentum et arcu ac facilisis. Sed mollis ultrices sem, a accumsan velit pulvinar sit amet. Nunc molestie nisl ac leo condimentum, feugiat auctor elit molestie."
+        android:textSize="16sp"
+        android:onClick="show"
+        android:textColor="#000000"
+        app:expandTextColor="@color/acc"
+        app:maxToExpand="110"
+        app:expanded="false"
+        app:expandText="More"
+        app:collapseText="Less"/>
+</android.widget.LinearLayout>
