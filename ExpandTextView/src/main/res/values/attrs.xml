@@ -7,5 +7,6 @@
         <attr format="boolean" name="expanded"/>
         <attr format="string" name="expandText"/>
 		<attr format="string" name="collapseText"/>
+        <attr format="float" name="expandTextSize">
     </declare-styleable>
 </resources>

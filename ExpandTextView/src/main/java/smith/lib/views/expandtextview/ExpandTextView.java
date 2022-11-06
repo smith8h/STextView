@@ -20,11 +20,11 @@ public class ExpandTextView extends TextView {
 	// >>>>>>>> variables
 	private int textMaxLength = 110;
 	private int textColor = 0xFF999999;
-	public static final int DEFAULT_COLOR = 0xFF999999;
-	private String expandedText, collapsedText, originalText;
-	private String showMoreText = "More", showLessText = "Less";
-	private SpannableString expandedTextSpannable, collapsedTextSpannable;
+    private String showMoreText = "More", showLessText = "Less";
 	private boolean isExpanded = false;
+    private float expandBtnSize = 0.9f;
+    private String expandedText, collapsedText, originalText;
+	private SpannableString expandedTextSpannable, collapsedTextSpannable, expandedFinalSpannable, collapsedFinalSpannable;
 	private ClickListener listener;
 	
     
@@ -62,16 +62,19 @@ public class ExpandTextView extends TextView {
 	private void init(Context context, AttributeSet attrs) {
 		TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.ExpandTextView, 0, 0);
 		try {
+            // get max shown text from attributes
 			int textLength = ta.getInteger(R.styleable.ExpandTextView_maxToExpand, textMaxLength);
 			setMaxToExpand(textLength);
 			
+            // get expand text color from attributes
 			String color = ta.getString(R.styleable.ExpandTextView_expandTextColor);
 			if (!color.equals(null) || !color.equals("")) {
 				setExpandTextColor(Color.parseColor(color));
 			} else {
-				setExpandTextColor(DEFAULT_COLOR);
+				setExpandTextColor(textColor);
 			}
 			
+            // get expand texts from attributes
 			String moreText = ta.getString(R.styleable.ExpandTextView_expandText);
 			String lessText = ta.getString(R.styleable.ExpandTextView_collapseText);
 			if (!moreText.equals(null) && !lessText.equals(null)) {
@@ -83,13 +86,19 @@ public class ExpandTextView extends TextView {
 			} else {
 				setExpandTexts(showLessText, showLessText);
 			}
-			
+            
+            // get expand text size from attributes
+            float size = ta.getFloat(R.styleable.ExpandTextView_expandTextSize, expandBtnSize);
+			setExpandTextSize(size);
+            
+            // get and update text 
             String update = getText().toString();
 			setContentText(update);
 			
+            // get expand is on/off from attributes
 			boolean expanded = ta.getBoolean(R.styleable.ExpandTextView_expanded, isExpanded);
 			setExpanded(expanded);
-		} catch (Exception e) {}
+		} catch (Exception e) { e.printStackTrace(); }
 		ta.recycle();
 	}
     
@@ -141,32 +150,36 @@ public class ExpandTextView extends TextView {
 			setText(expandedTextSpannable);
 		}
 	}
-	
+    
+    public void setExpandTextSize(float size) {
+        expandBtnSize = size;
+    }
+    
 	public void setContentText(String text) {
 		originalText = text;
 		
 		this.setMovementMethod(LinkMovementMethod.getInstance());
-		// show see more
+		
+        // show see more
 		if (originalText.length() >= textMaxLength) {
 			collapsedText = originalText.substring(0, textMaxLength) + "... " + showMoreText;
 			expandedText = originalText + " " + showLessText;
 			
-			// creating spannable strings
+			// creating btns spannable strings
 			collapsedTextSpannable = new SpannableString(collapsedText);
 			expandedTextSpannable = new SpannableString(expandedText);
 			
-			collapsedTextSpannable.setSpan(clickableSpan, textMaxLength + 4, collapsedText.length(), 0);
-			collapsedTextSpannable.setSpan(new StyleSpan(Typeface.NORMAL), textMaxLength + 4, collapsedText.length(), 0);
-			collapsedTextSpannable.setSpan(new RelativeSizeSpan(.9f), textMaxLength + 4, collapsedText.length(), 0);
+			collapsedTextSpannable.setSpan(expandButtonsClickSpan, textMaxLength + 4, collapsedText.length(), 0);
+			collapsedTextSpannable.setSpan(new StyleSpan(Typeface.BOLD), textMaxLength + 4, collapsedText.length(), 0);
+			collapsedTextSpannable.setSpan(new RelativeSizeSpan(expandBtnSize), textMaxLength + 4, collapsedText.length(), 0);
 			
-			expandedTextSpannable.setSpan(clickableSpan, originalText.length() + 1, expandedText.length(), 0);
-			expandedTextSpannable.setSpan(new StyleSpan(Typeface.NORMAL), originalText.length() + 1, expandedText.length(), 0);
-			expandedTextSpannable.setSpan(new RelativeSizeSpan(.9f), originalText.length() + 1, expandedText.length(), 0);
+			expandedTextSpannable.setSpan(expandButtonsClickSpan, originalText.length() + 1, expandedText.length(), 0);
+			expandedTextSpannable.setSpan(new StyleSpan(Typeface.BOLD), originalText.length() + 1, expandedText.length(), 0);
+			expandedTextSpannable.setSpan(new RelativeSizeSpan(expandBtnSize), originalText.length() + 1, expandedText.length(), 0);
 			
 			if (isExpanded) setText(expandedTextSpannable);
 			else setText(collapsedTextSpannable);
 		} else {
-			// to do: don't show see more
 			setText(originalText);
 		}
 		
@@ -174,7 +187,7 @@ public class ExpandTextView extends TextView {
 			@Override public void onClick(View v) {
 				if (listener != null) {
 					if (getTag() == null || !getTag().equals("spanClicked")) {
-						listener.onClick();
+						listener.onClick(originalText, isExpanded);
 					}
 				}
 				setTag("textClicked");
@@ -184,15 +197,17 @@ public class ExpandTextView extends TextView {
 		setOnLongClickListener(new OnLongClickListener() {
 			@Override public boolean onLongClick(View v) {
 				if (listener != null) {
-					listener.onLongClick();
+					listener.onLongClick(originalText, isExpanded);
 				}
 				setTag("textLongClicked");
 				return false;
 			}
 		});
 	}
+    
+    
 	
-	ClickableSpan clickableSpan = new ClickableSpan() {
+	ClickableSpan expandButtonsClickSpan = new ClickableSpan() {
 		@Override public void onClick(View widget) {
 			// to prevent toggle when long click on "show more/less"
 			if (getTag() == null || !getTag().equals("textLongClicked")) {

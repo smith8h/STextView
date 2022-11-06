@@ -16,19 +16,24 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
-        /* 
-        ExpandTextView etv = findViewById(R.id.etv);
+        
+        ExpandTextView etv = new ExpandTextView(this);
        
         etv.setClickListener(new ClickListener() {
-            @Override public void onClick() {
+            @Override
+            public void onClick(String originalText, boolean isExpanded) {
                 etv.toggle();
-                Toast.makeText(MainActivity.this, etv.getOriginalText(), Toast.LENGTH_SHORT).show();
             }
-            @Override public void onLongClick() {}
+            
+            @Override
+            public void onLongClick(String originalText, boolean isExpanded) {
+                Toast.maleText(MainActivity.this, originalText, Toast.LENGTH_SHORT).show();
+            }
         });
         
         etv.setMaxToExpand(110);
         etv.setExpandTextColor(getColor(R.color.acc));
+        etv.setExpandTextSize(.8f);
         etv.setExpandTexts("Show More", "Show Less");
         etv.setContentText("EveryThingUtils library by @programmer_ameer\nvery useful library support Android 5-13\ntested &amp; working on android 10+\n• FileUtils\n• AudioUtils\n• PdfUtils\n• ImageUtils\n• ApkUtils\n\nThe best choice if you decide to create a File Manager App!\n\nCheck it here https://github.com/abodinagdat16/EveryThingUtils");
         
@@ -39,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
         boolean isExpanded = etv.isExpanded();
         String originalText = etv.getOriginalText();
         
-        */
+        
     }
     
 }

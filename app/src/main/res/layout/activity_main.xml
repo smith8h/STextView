@@ -15,6 +15,7 @@
         android:onClick="show"
         android:textColor="#000000"
         app:expandTextColor="@color/acc"
+        app:expandTextSize="0.8"
         app:maxToExpand="110"
         app:expanded="false"
         app:expandText="More"
