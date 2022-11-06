@@ -2,9 +2,11 @@ package smith.lib.views.expandtextview;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.text.Spannable;
 import android.util.AttributeSet;
 import android.widget.TextView;
 import android.view.View;
+import android.text.style.ClickableSpan;
 import android.graphics.Typeface;
 import android.graphics.Color;
 import android.text.SpannableString;
@@ -13,20 +15,24 @@ import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
-import smith.lib.views.expandtextview.ClickListener;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ExpandTextView extends TextView {
 	
 	// >>>>>>>> variables
 	private int textMaxLength = 110;
 	private int textColor = 0xFF999999;
+    private int mentionsColor = 0xFF999999;
     private String showMoreText = "More", showLessText = "Less";
 	private boolean isExpanded = false;
+    private boolean isClickableMentions = false;
     private float expandBtnSize = 0.9f;
     private String expandedText, collapsedText, originalText;
 	private SpannableString expandedTextSpannable, collapsedTextSpannable, expandedFinalSpannable, collapsedFinalSpannable;
-	private ClickListener listener;
-	
+	private TextClickListener eListener;
+	private MentionsClickListener mListener;
+    
     
     
     
@@ -91,6 +97,18 @@ public class ExpandTextView extends TextView {
             float size = ta.getFloat(R.styleable.ExpandTextView_expandTextSize, expandBtnSize);
 			setExpandTextSize(size);
             
+            // get mentions is on/off from attributes
+			boolean clickable = ta.getBoolean(R.styleable.ExpandTextView_clickableMentions, isClickableMentions);
+			setClickableMentions(clickable);
+            
+            // get mentions text color from attributes
+			String mColor = ta.getString(R.styleable.ExpandTextView_mentionsColor);
+			if (!mColor.equals(null) || !mColor.equals("")) {
+				setMentionsColor(Color.parseColor(mColor));
+			} else {
+				setMentionsColor(mentionsColor);
+			}
+            
             // get and update text 
             String update = getText().toString();
 			setContentText(update);
@@ -106,9 +124,13 @@ public class ExpandTextView extends TextView {
     
 	
 	// >>>>>>>> methods
-	public void setClickListener(ClickListener listener) {
-		this.listener = listener;
+	public void setTextClickListener(TextClickListener listener) {
+		eListener = listener;
 	}
+    
+    public void setMentionsClickListener(MentionsClickListener listener) {
+        mListener = listener;
+    }
 	
 	public void setMaxToExpand(int maxLength) {
 		textMaxLength = maxLength;
@@ -117,8 +139,21 @@ public class ExpandTextView extends TextView {
 	public void setExpandTextColor(int color) {
 		textColor = color;
 	}
+    
+    public void setMentionsColor(int color) {
+        mentionsColor = color;
+    }
 	
-	public void setExpanded(boolean expand) {
+	public void setExpandTexts(String showMore, String showLess) {
+		showMoreText = showMore;
+		showLessText = showLess;
+	}
+    
+    public void setClickableMentions(boolean clickable) {
+        isClickableMentions = clickable;
+    }
+    
+    public void setExpanded(boolean expand) {
 		if (expand) {
 			isExpanded = true;
 			setText(expandedTextSpannable);
@@ -126,11 +161,6 @@ public class ExpandTextView extends TextView {
 			isExpanded = false;
 			setText(collapsedTextSpannable);
 		}
-	}
-	
-	public void setExpandTexts(String showMore, String showLess) {
-		showMoreText = showMore;
-		showLessText = showLess;
 	}
 	
 	public boolean isExpanded() {
@@ -157,71 +187,85 @@ public class ExpandTextView extends TextView {
     
 	public void setContentText(String text) {
 		originalText = text;
-		
 		this.setMovementMethod(LinkMovementMethod.getInstance());
 		
-        // show see more
 		if (originalText.length() >= textMaxLength) {
 			collapsedText = originalText.substring(0, textMaxLength) + "... " + showMoreText;
 			expandedText = originalText + " " + showLessText;
 			
-			// creating btns spannable strings
 			collapsedTextSpannable = new SpannableString(collapsedText);
-			expandedTextSpannable = new SpannableString(expandedText);
-			
 			collapsedTextSpannable.setSpan(expandButtonsClickSpan, textMaxLength + 4, collapsedText.length(), 0);
-			collapsedTextSpannable.setSpan(new StyleSpan(Typeface.BOLD), textMaxLength + 4, collapsedText.length(), 0);
 			collapsedTextSpannable.setSpan(new RelativeSizeSpan(expandBtnSize), textMaxLength + 4, collapsedText.length(), 0);
-			
+			if (isClickableMentions) setMentionsSpan(collapsedTextSpannable, collapsedText);
+            
+            expandedTextSpannable = new SpannableString(expandedText);
 			expandedTextSpannable.setSpan(expandButtonsClickSpan, originalText.length() + 1, expandedText.length(), 0);
-			expandedTextSpannable.setSpan(new StyleSpan(Typeface.BOLD), originalText.length() + 1, expandedText.length(), 0);
 			expandedTextSpannable.setSpan(new RelativeSizeSpan(expandBtnSize), originalText.length() + 1, expandedText.length(), 0);
-			
+			if (isClickableMentions) setMentionsSpan(expandedTextSpannable, expandedText);
+            
 			if (isExpanded) setText(expandedTextSpannable);
 			else setText(collapsedTextSpannable);
 		} else {
-			setText(originalText);
+            if (isClickableMentions) {
+                SpannableString ss = new SpannableString(originalText);
+                setMentionsSpan(ss, originalText);
+		    	setText(ss);
+            } else setText(originalText);
 		}
 		
-		setOnClickListener(new OnClickListener() {
-			@Override public void onClick(View v) {
-				if (listener != null) {
-					if (getTag() == null || !getTag().equals("spanClicked")) {
-						listener.onClick(originalText, isExpanded);
-					}
-				}
-				setTag("textClicked");
-			}
+		setOnClickListener(v -> {
+			if (getTag() == null || !getTag().equals("spanClicked")) {
+				if (eListener != null) eListener.onClick(originalText, isExpanded);
+            } setTag("textClicked");
 		});
-		
-		setOnLongClickListener(new OnLongClickListener() {
-			@Override public boolean onLongClick(View v) {
-				if (listener != null) {
-					listener.onLongClick(originalText, isExpanded);
-				}
-				setTag("textLongClicked");
-				return false;
-			}
+		setOnLongClickListener(v -> {
+			if (eListener != null) eListener.onLongClick(originalText, isExpanded);
+			setTag("textLongClicked");
+			return false;
 		});
 	}
     
+    private void setMentionsSpan(SpannableString ssb, String str){
+		Pattern pattern = Pattern.compile("(?<![^\\s])(([@]{1}|[#]{1})([A-Za-z0-9_-]\\.?)+)(?![^\\s,])");
+		Matcher matcher = pattern.matcher(str);
+		while(matcher.find()){
+            ProfileSpan mentionsClickSpan = new ProfileSpan();
+			ssb.setSpan(mentionsClickSpan, matcher.start() , matcher.end() , 0);
+		}
+	}
     
+    private class ProfileSpan extends ClickableSpan {
+		@Override public void onClick(View view){
+			if(view instanceof TextView){
+				TextView tv = (TextView)view;
+			    if(tv.getText() instanceof Spannable){
+					Spannable sp = (Spannable)tv.getText();
+					int start = sp.getSpanStart(this);
+				    int end = sp.getSpanEnd(this);
+                    if (mListener != null) mListener.onClick(sp.subSequence(start,end).toString());
+				}
+			}
+		}
+        
+		@Override public void updateDrawState(TextPaint ds) {
+            ds.setUnderlineText(false);
+	        ds.setColor(mentionsColor);
+			ds.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+	    }
+	}
 	
 	ClickableSpan expandButtonsClickSpan = new ClickableSpan() {
 		@Override public void onClick(View widget) {
-			// to prevent toggle when long click on "show more/less"
 			if (getTag() == null || !getTag().equals("textLongClicked")) {
-				toggle();
-				setTag("spanClicked");
-			} else {
-				setTag("");
-			}
+				toggle(); setTag("spanClicked");
+			} else setTag("");
 		}
 		
 		@Override public void updateDrawState(TextPaint ds) {
 			super.updateDrawState(ds);
 			ds.setUnderlineText(false);
 			ds.setColor(textColor);
+            ds.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
 		}
 	};
 }
