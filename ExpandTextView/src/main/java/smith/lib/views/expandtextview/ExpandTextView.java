@@ -20,6 +20,7 @@ import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
+import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -319,8 +320,9 @@ public class ExpandTextView extends TextView {
 					int start = sp.getSpanStart(this);
 				    int end = sp.getSpanEnd(this);
                     String text = sp.subSequence(start, end).toString();
-                    ((ClipboardManager)context.getSystemService(context.CLIPBOARD_SERVICE))
+                    ((ClipboardManager)context.getSystemService(Context.CLIPBOARD_SERVICE))
                             .setPrimaryClip(ClipData.newPlainText("clipboard", text));
+                    Toast.makeText(context, context.getString(R.string.copied_span_click), Toast.LENGTH_SHORT).show();
 				}
 			}
 		}
