@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.style.StrikethroughSpan;
 import android.text.style.TypefaceSpan;
 import android.util.AttributeSet;
 import android.widget.TextView;
@@ -239,7 +240,7 @@ public class ExpandTextView extends TextView {
     private void setMarkdownSpans(SpannableStringBuilder ssb, String text) {
         List<StyleSpan> spans = new ArrayList<>();
         List<TypefaceSpan> spans2 = new ArrayList<>();
-        
+        List<StrikethroughSpan> spans3 = new ArrayList<>();
         // ** bold **
         Pattern p = Pattern.compile("(\\*\\*)(.*?)(\\*\\*)");
         Matcher matcher = p.matcher(text);
@@ -271,6 +272,15 @@ public class ExpandTextView extends TextView {
             spans2.add(span);
         }
         
+        // ~~ strike through ~~
+        p = Pattern.compile("(\\~\\~)(.*?)(\\~\\~)");
+        matcher = p.matcher(text);
+        while (matcher.find()) { 
+            StrikethroughSpan span = new StrikethroughSpan();
+            ssb.setSpan(span, matcher.start(), matcher.end(), 0);
+            spans3.add(span);
+        }
+        
         for (StyleSpan span : spans) {
 	        ssb.replace(ssb.getSpanStart(span), ssb.getSpanStart(span) + 2, "");
 	        ssb.replace(ssb.getSpanEnd(span) - 2, ssb.getSpanEnd(span), "");
@@ -278,6 +288,10 @@ public class ExpandTextView extends TextView {
         for (TypefaceSpan span : spans2) {
             ssb.replace(ssb.getSpanStart(span), ssb.getSpanStart(span) + 1, "");
 	        ssb.replace(ssb.getSpanEnd(span) - 1, ssb.getSpanEnd(span), "");
+        }
+        for (StrikethroughSpan span : spans3) {
+            ssb.replace(ssb.getSpanStart(span), ssb.getSpanStart(span) + 2, "");
+	        ssb.replace(ssb.getSpanEnd(span) - 2, ssb.getSpanEnd(span), "");
         }
     }
     
