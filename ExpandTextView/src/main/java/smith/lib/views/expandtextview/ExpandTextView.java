@@ -1,9 +1,12 @@
 package smith.lib.views.expandtextview;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.style.TypefaceSpan;
 import android.util.AttributeSet;
 import android.widget.TextView;
 import android.view.View;
@@ -35,6 +38,7 @@ public class ExpandTextView extends TextView {
 	private SpannableStringBuilder expandedTextSpannable, collapsedTextSpannable, expandedFinalSpannable, collapsedFinalSpannable;
 	private TextClickListener eListener;
 	private MentionsClickListener mListener;
+    private Context context;
     
     
     
@@ -43,11 +47,13 @@ public class ExpandTextView extends TextView {
 	public ExpandTextView(Context context) {
 		super(context);
 		init(context, null);
+        this.context = context;
 		setContentText(getText().toString());
 	}
 	
 	public ExpandTextView(Context context, AttributeSet attrs) {
 		super(context, attrs);
+        this.context = context;
 		if (attrs != null) {
 			init(context, attrs);
 		} else {
@@ -57,6 +63,7 @@ public class ExpandTextView extends TextView {
 	
 	public ExpandTextView(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
+        this.context = context;
 		if (attrs != null) {
 			init(context, attrs);
 		} else {
@@ -231,27 +238,47 @@ public class ExpandTextView extends TextView {
     // >>>>>>>>>> extras
     private void setMarkdownSpans(SpannableStringBuilder ssb, String text) {
         List<StyleSpan> spans = new ArrayList<>();
+        List<TypefaceSpan> spans2 = new ArrayList<>();
+        
         // ** bold **
         Pattern p = Pattern.compile("(\\*\\*)(.*?)(\\*\\*)");
         Matcher matcher = p.matcher(text);
         while (matcher.find()) { markdown(spans, ssb, matcher, Typeface.BOLD); }
         
+        // _* bolt italic *_
         p = Pattern.compile("(\\_\\*)(.*?)(\\*\\_)");
         matcher = p.matcher(text);
         while (matcher.find()) { markdown(spans, ssb, matcher, Typeface.BOLD_ITALIC); }
         
+        // *_ bold italic _*
         p = Pattern.compile("(\\*\\_)(.*?)(\\_\\*)");
         matcher = p.matcher(text);
         while (matcher.find()) { markdown(spans, ssb, matcher, Typeface.BOLD_ITALIC); }
         
+        // __ italic __
         p = Pattern.compile("(\\_\\_)(.*?)(\\_\\_)");
         matcher = p.matcher(text);
         while (matcher.find()) { markdown(spans, ssb, matcher, Typeface.ITALIC); }
+        
+        // ` monospace `
+        p = Pattern.compile("(\\`)(.*?)(\\`)");
+        matcher = p.matcher(text);
+        while (matcher.find()) { 
+            TypefaceSpan span = new TypefaceSpan(Typeface.MONOSPACE);
+            MonoClickSpan cSpan = new MonoClickSpan();
+            ssb.setSpan(span, matcher.start(), matcher.end(), 0);
+            ssb.setSpan(cSpan, matcher.start(), matcher.end(), 0);
+            spans2.add(span);
+        }
         
         for (StyleSpan span : spans) {
 	        ssb.replace(ssb.getSpanStart(span), ssb.getSpanStart(span) + 2, "");
 	        ssb.replace(ssb.getSpanEnd(span) - 2, ssb.getSpanEnd(span), "");
 	    }
+        for (TypefaceSpan span : spans2) {
+            ssb.replace(ssb.getSpanStart(span), ssb.getSpanStart(span) + 1, "");
+	        ssb.replace(ssb.getSpanEnd(span) - 1, ssb.getSpanEnd(span), "");
+        }
     }
     
     private void markdown(List<StyleSpan> spans, SpannableStringBuilder ssb, Matcher matcher, int mark) {
@@ -269,6 +296,26 @@ public class ExpandTextView extends TextView {
 		}
 	}
     
+    private class MonoClickSpan extends ClickableSpan {
+        @Override public void onClick(View view){
+			if(view instanceof TextView){
+				TextView tv = (TextView)view;
+			    if(tv.getText() instanceof Spannable){
+					Spannable sp = (Spannable)tv.getText();
+					int start = sp.getSpanStart(this);
+				    int end = sp.getSpanEnd(this);
+                    String text = sp.subSequence(start, end).toString();
+                    ((ClipboardManager)context.getSystemService(context.CLIPBOARD_SERVICE))
+                            .setPrimaryClip(ClipData.newPlainText("clipboard", text));
+				}
+			}
+		}
+        
+		@Override public void updateDrawState(TextPaint ds) {
+            ds.setUnderlineText(false);
+	    }
+    }
+    
     private class ProfileSpan extends ClickableSpan {
 		@Override public void onClick(View view){
 			if(view instanceof TextView){
@@ -278,7 +325,6 @@ public class ExpandTextView extends TextView {
 					int start = sp.getSpanStart(this);
 				    int end = sp.getSpanEnd(this);
                     if (mListener != null) mListener.onClick(sp.subSequence(start,end).toString());
-                    
 				}
 			}
 		}
