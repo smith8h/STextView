@@ -234,21 +234,19 @@ public class ExpandTextView extends TextView {
         // ** bold **
         Pattern p = Pattern.compile("(\\*\\*)(.*?)(\\*\\*)");
         Matcher matcher = p.matcher(text);
-        while (matcher.find()) {
-	        markdown(spans, ssb, matcher, Typeface.BOLD);
-	    }
+        while (matcher.find()) { markdown(spans, ssb, matcher, Typeface.BOLD); }
         
         p = Pattern.compile("(\\_\\*)(.*?)(\\*\\_)");
         matcher = p.matcher(text);
-        while (matcher.find()) {
-            markdown(spans, ssb, matcher, Typeface.BOLD_ITALIC);
-        }
+        while (matcher.find()) { markdown(spans, ssb, matcher, Typeface.BOLD_ITALIC); }
         
         p = Pattern.compile("(\\*\\_)(.*?)(\\_\\*)");
         matcher = p.matcher(text);
-        while (matcher.find()) {
-            markdown(spans, ssb, matcher, Typeface.BOLD_ITALIC);
-        }
+        while (matcher.find()) { markdown(spans, ssb, matcher, Typeface.BOLD_ITALIC); }
+        
+        p = Pattern.compile("(\\_\\_)(.*?)(\\_\\_)");
+        matcher = p.matcher(text);
+        while (matcher.find()) { markdown(spans, ssb, matcher, Typeface.ITALIC); }
         
         for (StyleSpan span : spans) {
 	        ssb.replace(ssb.getSpanStart(span), ssb.getSpanStart(span) + 2, "");
@@ -280,6 +278,7 @@ public class ExpandTextView extends TextView {
 					int start = sp.getSpanStart(this);
 				    int end = sp.getSpanEnd(this);
                     if (mListener != null) mListener.onClick(sp.subSequence(start,end).toString());
+                    
 				}
 			}
 		}
