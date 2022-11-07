@@ -3,6 +3,7 @@ package smith.lib.views.expandtextview;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.text.Spannable;
+import android.text.SpannableStringBuilder;
 import android.util.AttributeSet;
 import android.widget.TextView;
 import android.view.View;
@@ -15,6 +16,8 @@ import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,7 +32,7 @@ public class ExpandTextView extends TextView {
     private boolean isClickableMentions = false;
     private float expandBtnSize = 0.9f;
     private String expandedText, collapsedText, originalText;
-	private SpannableString expandedTextSpannable, collapsedTextSpannable, expandedFinalSpannable, collapsedFinalSpannable;
+	private SpannableStringBuilder expandedTextSpannable, collapsedTextSpannable, expandedFinalSpannable, collapsedFinalSpannable;
 	private TextClickListener eListener;
 	private MentionsClickListener mListener;
     
@@ -61,10 +64,6 @@ public class ExpandTextView extends TextView {
 		}
 	}
     
-    
-    
-	
-	// >>>>>>>> init attrs
 	private void init(Context context, AttributeSet attrs) {
 		TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.ExpandTextView, 0, 0);
 		try {
@@ -193,24 +192,25 @@ public class ExpandTextView extends TextView {
 			collapsedText = originalText.substring(0, textMaxLength) + "... " + showMoreText;
 			expandedText = originalText + " " + showLessText;
 			
-			collapsedTextSpannable = new SpannableString(collapsedText);
+			collapsedTextSpannable = new SpannableStringBuilder(collapsedText);
 			collapsedTextSpannable.setSpan(expandButtonsClickSpan, textMaxLength + 4, collapsedText.length(), 0);
 			collapsedTextSpannable.setSpan(new RelativeSizeSpan(expandBtnSize), textMaxLength + 4, collapsedText.length(), 0);
-			if (isClickableMentions) setMentionsSpan(collapsedTextSpannable, collapsedText);
+			setMarkdownSpans(collapsedTextSpannable, collapsedText);
+            if (isClickableMentions) setMentionsSpan(collapsedTextSpannable, collapsedText);
             
-            expandedTextSpannable = new SpannableString(expandedText);
+            expandedTextSpannable = new SpannableStringBuilder(expandedText);
 			expandedTextSpannable.setSpan(expandButtonsClickSpan, originalText.length() + 1, expandedText.length(), 0);
 			expandedTextSpannable.setSpan(new RelativeSizeSpan(expandBtnSize), originalText.length() + 1, expandedText.length(), 0);
-			if (isClickableMentions) setMentionsSpan(expandedTextSpannable, expandedText);
+			setMarkdownSpans(expandedTextSpannable, expandedText);
+            if (isClickableMentions) setMentionsSpan(expandedTextSpannable, expandedText);
             
 			if (isExpanded) setText(expandedTextSpannable);
 			else setText(collapsedTextSpannable);
 		} else {
-            if (isClickableMentions) {
-                SpannableString ss = new SpannableString(originalText);
-                setMentionsSpan(ss, originalText);
-		    	setText(ss);
-            } else setText(originalText);
+            SpannableStringBuilder ss = new SpannableStringBuilder(originalText);
+            setMarkdownSpans(ss, originalText);
+            if (isClickableMentions) setMentionsSpan(ss, originalText);
+        	setText(ss);
 		}
 		
 		setOnClickListener(v -> {
@@ -225,12 +225,34 @@ public class ExpandTextView extends TextView {
 		});
 	}
     
-    private void setMentionsSpan(SpannableString ssb, String str){
+    
+    
+    
+    // >>>>>>>>>> extras
+    private void setMarkdownSpans(SpannableStringBuilder ssb, String text) {
+        // ** bold **
+        Pattern p = Pattern.compile("(\\*\\*)(.*?)(\\*\\*)");
+        Matcher matcher = p.matcher(text);
+
+        List<StyleSpan> spans = new ArrayList<>();
+        //making text bold
+        while (matcher.find()) {
+	        StyleSpan span = new StyleSpan(Typeface.BOLD);
+	        ssb.setSpan(span, matcher.start(), matcher.end(), 0);
+	        spans.add(span);
+	    }
+        for (StyleSpan span : spans) {
+	        ssb.replace(ssb.getSpanStart(span), ssb.getSpanStart(span) + 2, "");
+	        ssb.replace(ssb.getSpanEnd(span) - 2, ssb.getSpanEnd(span), "");
+	    }
+    }
+    
+    private void setMentionsSpan(SpannableStringBuilder ssb, String str){
 		Pattern pattern = Pattern.compile("(?<![^\\s])(([@]{1}|[#]{1})([A-Za-z0-9_-]\\.?)+)(?![^\\s,])");
 		Matcher matcher = pattern.matcher(str);
 		while(matcher.find()){
             ProfileSpan mentionsClickSpan = new ProfileSpan();
-			ssb.setSpan(mentionsClickSpan, matcher.start() , matcher.end() , 0);
+			ssb.setSpan(mentionsClickSpan, matcher.start()-4, matcher.end()-4, 0);
 		}
 	}
     

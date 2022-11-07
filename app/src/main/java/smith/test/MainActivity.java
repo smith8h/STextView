@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
         etv.setClickableMentions(true);
         etv.setMentionsColor(getColor(R.color.acc));
         
-        etv.setContentText("EveryThingUtils library by @programmer_ameer\nvery useful library support Android 5-13\ntested &amp; working on android 10+\n• FileUtils\n• AudioUtils\n• PdfUtils\n• ImageUtils\n• ApkUtils\n\nThe best choice if you decide to create a #File_Manager App!\n\nCheck it here https://github.com/abodinagdat16/EveryThingUtils");
+        etv.setContentText("**EveryThingUtils** library by @programmer_ameer\nvery useful library support Android 5-13\ntested &amp; working on android 10+\n• FileUtils\n• AudioUtils\n• PdfUtils\n• ImageUtils\n• ApkUtils\n\nThe best choice if you decide to create a #File_Manager App!\n\nCheck it here https://github.com/abodinagdat16/EveryThingUtils");
         
         ((LinearLayout)findViewById(R.id.main)).addView(etv);
     }
