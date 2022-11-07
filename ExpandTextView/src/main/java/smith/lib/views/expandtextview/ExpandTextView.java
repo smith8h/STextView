@@ -230,21 +230,36 @@ public class ExpandTextView extends TextView {
     
     // >>>>>>>>>> extras
     private void setMarkdownSpans(SpannableStringBuilder ssb, String text) {
+        List<StyleSpan> spans = new ArrayList<>();
         // ** bold **
         Pattern p = Pattern.compile("(\\*\\*)(.*?)(\\*\\*)");
         Matcher matcher = p.matcher(text);
-
-        List<StyleSpan> spans = new ArrayList<>();
-        //making text bold
         while (matcher.find()) {
-	        StyleSpan span = new StyleSpan(Typeface.BOLD);
-	        ssb.setSpan(span, matcher.start(), matcher.end(), 0);
-	        spans.add(span);
+	        markdown(spans, ssb, matcher, Typeface.BOLD);
 	    }
+        
+        p = Pattern.compile("(\\_\\*)(.*?)(\\*\\_)");
+        matcher = p.matcher(text);
+        while (matcher.find()) {
+            markdown(spans, ssb, matcher, Typeface.BOLD_ITALIC);
+        }
+        
+        p = Pattern.compile("(\\*\\_)(.*?)(\\_\\*)");
+        matcher = p.matcher(text);
+        while (matcher.find()) {
+            markdown(spans, ssb, matcher, Typeface.BOLD_ITALIC);
+        }
+        
         for (StyleSpan span : spans) {
 	        ssb.replace(ssb.getSpanStart(span), ssb.getSpanStart(span) + 2, "");
 	        ssb.replace(ssb.getSpanEnd(span) - 2, ssb.getSpanEnd(span), "");
 	    }
+    }
+    
+    private void markdown(List<StyleSpan> spans, SpannableStringBuilder ssb, Matcher matcher, int mark) {
+        StyleSpan span = new StyleSpan(mark);
+	    ssb.setSpan(span, matcher.start(), matcher.end(), 0);
+        spans.add(span);
     }
     
     private void setMentionsSpan(SpannableStringBuilder ssb, String str){
