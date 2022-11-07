@@ -6,7 +6,7 @@
         <attr format="color" name="expandTextColor"/>
         <attr format="color" name="mentionsColor"/>
         <attr format="boolean" name="expanded"/>
-        <attr format="boolean" name="clickableMentions"/>
+        <attr format="boolean" name="enableExpands"/>
         <attr format="string" name="expandText"/>
 		<attr format="string" name="collapseText"/>
         <attr format="float" name="expandTextSize" />
