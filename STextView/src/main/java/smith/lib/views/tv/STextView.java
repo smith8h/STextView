@@ -4,19 +4,16 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.drawable.Drawable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StrikethroughSpan;
 import android.text.style.TypefaceSpan;
-import android.text.util.Linkify;
 import android.util.AttributeSet;
 import android.widget.TextView;
 import android.view.View;
 import android.text.style.ClickableSpan;
 import android.graphics.Typeface;
 import android.graphics.Color;
-import android.text.SpannableString;
 import android.text.TextPaint;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
@@ -33,13 +30,13 @@ public class STextView extends TextView {
 	// >>>>>>>> variables
 	private int textMaxLength = 110;
 	private int textColor = 0xFF999999;
-    //private int mentionsColor = 0xFF999999;
+    private int mentionsColor = 0xFF999999;
     private String showMoreText = "More", showLessText = "Less";
 	private boolean isExpanded = false;
     private boolean isEnabledExpands = false;
     private float expandBtnSize = 0.9f;
     private String expandedText, collapsedText, originalText;
-	private SpannableStringBuilder expandedTextSpannable, collapsedTextSpannable, expandedFinalSpannable, collapsedFinalSpannable;
+	private SpannableStringBuilder expandedTextSpannable, collapsedTextSpannable;
 	private TextClickListener eListener;
 	private MentionsClickListener mListener;
     private Context context;
@@ -76,14 +73,14 @@ public class STextView extends TextView {
 	}
     
 	private void init(Context context, AttributeSet attrs) {
-        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.ExpandTextView, 0, 0);
+        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.STextView, 0, 0);
 		try {
             // get max shown text from attributes
-			int textLength = ta.getInteger(R.styleable.ExpandTextView_maxToExpand, textMaxLength);
+			int textLength = ta.getInteger(R.styleable.STextView_maxToExpand, textMaxLength);
 			setMaxToExpand(textLength);
 			
             // get expand text color from attributes
-			String color = ta.getString(R.styleable.ExpandTextView_expandTextColor);
+			String color = ta.getString(R.styleable.STextView_expandTextColor);
 			if (!color.equals(null) || !color.equals("")) {
 				setExpandTextColor(Color.parseColor(color));
 			} else {
@@ -91,8 +88,8 @@ public class STextView extends TextView {
 			}
 			
             // get expand texts from attributes
-			String moreText = ta.getString(R.styleable.ExpandTextView_expandText);
-			String lessText = ta.getString(R.styleable.ExpandTextView_collapseText);
+			String moreText = ta.getString(R.styleable.STextView_expandText);
+			String lessText = ta.getString(R.styleable.STextView_collapseText);
 			if (!moreText.equals(null) && !lessText.equals(null)) {
 				setExpandTexts(moreText, lessText);
 			} else if (!moreText.equals(null) && lessText.equals(null)) {
@@ -104,33 +101,30 @@ public class STextView extends TextView {
 			}
             
             // get expand text size from attributes
-            float size = ta.getFloat(R.styleable.ExpandTextView_expandTextSize, expandBtnSize);
+            float size = ta.getFloat(R.styleable.STextView_expandTextSize, expandBtnSize);
 			setExpandTextSize(size);
             
             // get enableability is on/off from attributes
-			boolean clickable = ta.getBoolean(R.styleable.ExpandTextView_enableExpands, isEnabledExpands);
+			boolean clickable = ta.getBoolean(R.styleable.STextView_enableExpands, isEnabledExpands);
 			setExpandsEnabled(clickable);
             
             // get mentions text color from attributes
-			/*String mColor = ta.getString(R.styleable.ExpandTextView_mentionsColor);
+			String mColor = ta.getString(R.styleable.STextView_mentionsColor);
 			if (!mColor.equals(null) || !mColor.equals("")) {
 				setMentionsColor(Color.parseColor(mColor));
 			} else {
 				setMentionsColor(mentionsColor);
-			}*/
+			}
             
             // get and update text 
             String update = getText().toString();
 			setContentText(update);
 			
             // get expand is on/off from attributes
-			boolean expanded = ta.getBoolean(R.styleable.ExpandTextView_expanded, isExpanded);
+			boolean expanded = ta.getBoolean(R.styleable.STextView_expanded, isExpanded);
 			setExpanded(expanded);
 		} catch (Exception e) { e.printStackTrace(); }
 		ta.recycle();
-        
-        Linkify.addLinks(this, Linkify.ALL);
-        this.setLinksClickable(true);
 	}
     
     
@@ -153,9 +147,9 @@ public class STextView extends TextView {
 		textColor = color;
 	}
     
-    /*public void setMentionsColor(int color) {
+    public void setMentionsColor(int color) {
         mentionsColor = color;
-    }*/
+    }
 	
 	public void setExpandTexts(String showMore, String showLess) {
 		showMoreText = showMore;
@@ -210,21 +204,18 @@ public class STextView extends TextView {
 			collapsedTextSpannable.setSpan(expandButtonsClickSpan, textMaxLength + 4, collapsedText.length(), 0);
 			collapsedTextSpannable.setSpan(new RelativeSizeSpan(expandBtnSize), textMaxLength + 4, collapsedText.length(), 0);
 			setMarkdownSpans(collapsedTextSpannable, collapsedText);
-            // setMentionsSpan(collapsedTextSpannable, collapsedText);
             
             expandedTextSpannable = new SpannableStringBuilder(expandedText);
 			expandedTextSpannable.setSpan(expandButtonsClickSpan, originalText.length() + 1, expandedText.length(), 0);
 			expandedTextSpannable.setSpan(new RelativeSizeSpan(expandBtnSize), originalText.length() + 1, expandedText.length(), 0);
 			setMarkdownSpans(expandedTextSpannable, expandedText);
-            // setMentionsSpan(expandedTextSpannable, expandedText);
             
 			if (isExpanded) setText(expandedTextSpannable);
 			else setText(collapsedTextSpannable);
 		} else {
             SpannableStringBuilder ss = new SpannableStringBuilder(originalText);
             setMarkdownSpans(ss, originalText);
-            // setMentionsSpan(ss, originalText);
-        	setText(ss);
+            setText(ss);
 		}
 		
 		setOnClickListener(v -> {
@@ -247,6 +238,7 @@ public class STextView extends TextView {
         List<StyleSpan> spans = new ArrayList<>();
         List<TypefaceSpan> spans2 = new ArrayList<>();
         List<StrikethroughSpan> spans3 = new ArrayList<>();
+        
         // ** bold **
         Pattern p = Pattern.compile("(\\*\\*)(.*?)(\\*\\*)");
         Matcher matcher = p.matcher(text);
@@ -287,8 +279,7 @@ public class STextView extends TextView {
             spans3.add(span);
         }
         
-        
-        
+        // delete **__~~``
         for (StyleSpan span : spans) {
 	        ssb.replace(ssb.getSpanStart(span), ssb.getSpanStart(span) + 2, "");
 	        ssb.replace(ssb.getSpanEnd(span) - 2, ssb.getSpanEnd(span), "");
@@ -301,6 +292,14 @@ public class STextView extends TextView {
             ssb.replace(ssb.getSpanStart(span), ssb.getSpanStart(span) + 2, "");
 	        ssb.replace(ssb.getSpanEnd(span) - 2, ssb.getSpanEnd(span), "");
         }
+        
+        // mentions & hashtags
+        p = Pattern.compile("(?<![^\\s])(([@]{1}|[#]{1})([A-Za-z0-9_-]\\.?)+)(?![^\\s,])");
+		matcher = p.matcher(ssb);
+		while(matcher.find()){
+            ProfileSpan ps = new ProfileSpan();
+            ssb.setSpan(ps, matcher.start(), matcher.end(), 0);
+        }
     }
     
     private void markdown(List<StyleSpan> spans, SpannableStringBuilder ssb, Matcher matcher, int mark) {
@@ -308,15 +307,6 @@ public class STextView extends TextView {
 	    ssb.setSpan(span, matcher.start(), matcher.end(), 0);
         spans.add(span);
     }
-    
-    /*private void setMentionsSpan(SpannableStringBuilder ssb, String str){
-		Pattern pattern = Pattern.compile("(?<![^\\s])(([@]{1}|[#]{1})([A-Za-z0-9_-]\\.?)+)(?![^\\s,])");
-		Matcher matcher = pattern.matcher(str);
-		while(matcher.find()){
-            ProfileSpan mentionsClickSpan = new ProfileSpan();
-			ssb.setSpan(mentionsClickSpan, matcher.start(), matcher.end(), 0);
-		}
-	}*/
     
     private class MonoClickSpan extends ClickableSpan {
         @Override public void onClick(View view){
@@ -335,11 +325,14 @@ public class STextView extends TextView {
 		}
         
 		@Override public void updateDrawState(TextPaint ds) {
+            super.updateDrawState(ds);
             ds.setUnderlineText(false);
+            ds.setColor(textColor);
+            ds.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL));
 	    }
     }
     
-    /*private class ProfileSpan extends ClickableSpan {
+    private class ProfileSpan extends ClickableSpan {
 		@Override public void onClick(View view){
 			if(view instanceof TextView){
 				TextView tv = (TextView)view;
@@ -347,20 +340,24 @@ public class STextView extends TextView {
 					Spannable sp = (Spannable)tv.getText();
 					int start = sp.getSpanStart(this);
 				    int end = sp.getSpanEnd(this);
-                    if (mListener != null) mListener.onClick(sp.subSequence(start,end).toString());
+                    String type = "";
+                    if (sp.subSequence(start, start+1).equals("@")) type = "mention";
+                    else type = "hashtag";
+                    if (mListener != null) mListener.onClick(sp.subSequence(start,end).toString(), type);
 				}
 			}
 		}
         
 		@Override public void updateDrawState(TextPaint ds) {
+            super.updateDrawState(ds);
             ds.setUnderlineText(false);
 	        ds.setColor(mentionsColor);
 			ds.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
 	    }
-	}*/
+	}
 	
 	ClickableSpan expandButtonsClickSpan = new ClickableSpan() {
-		@Override public void onClick(View widget) {
+		@Override public void onClick(View v) {
 			if (getTag() == null || !getTag().equals("textLongClicked")) {
 				toggle(); setTag("spanClicked");
 			} else setTag("");

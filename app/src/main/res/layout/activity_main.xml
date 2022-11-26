@@ -32,10 +32,11 @@
         android:textSize="16sp"
         android:textColor="#000000"
         app:expandTextColor="@color/acc"
+        app:mentionsColor="@color/acc"
         app:expandTextSize="0.9"
         app:maxToExpand="80"
         app:expanded="false"
-        app:expandText="More"
-        app:collapseText="Less"
+        app:expandText="Expand"
+        app:collapseText="Collapse"
         app:enableExpands="true"/>
 </android.widget.LinearLayout>
