@@ -1,6 +1,7 @@
 package smith.test;
 
 import android.os.Bundle;
+import android.text.util.Linkify;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;

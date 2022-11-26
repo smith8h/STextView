@@ -9,6 +9,7 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StrikethroughSpan;
 import android.text.style.TypefaceSpan;
+import android.text.util.Linkify;
 import android.util.AttributeSet;
 import android.widget.TextView;
 import android.view.View;
@@ -75,7 +76,7 @@ public class STextView extends TextView {
 	}
     
 	private void init(Context context, AttributeSet attrs) {
-		TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.ExpandTextView, 0, 0);
+        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.ExpandTextView, 0, 0);
 		try {
             // get max shown text from attributes
 			int textLength = ta.getInteger(R.styleable.ExpandTextView_maxToExpand, textMaxLength);
@@ -127,6 +128,9 @@ public class STextView extends TextView {
 			setExpanded(expanded);
 		} catch (Exception e) { e.printStackTrace(); }
 		ta.recycle();
+        
+        Linkify.addLinks(this, Linkify.ALL);
+        this.setLinksClickable(true);
 	}
     
     
