@@ -1,4 +1,4 @@
-package smith.lib.views.expandtextview;
+package smith.lib.views.tv;
 
 public interface TextClickListener {
     public void onClick(String originalText, boolean isExpanded);

@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace 'smith.lib.views.expandtextview'
+    namespace 'smith.lib.views.tv'
     compileSdk 33
 
     defaultConfig {

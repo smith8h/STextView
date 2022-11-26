@@ -1,4 +1,4 @@
-package smith.lib.views.expandtextview;
+package smith.lib.views.tv;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ExpandTextView extends TextView {
+public class STextView extends TextView {
 	
 	// >>>>>>>> variables
 	private int textMaxLength = 110;
@@ -47,14 +47,14 @@ public class ExpandTextView extends TextView {
     
     
 	// >>>>>>>> constructors
-	public ExpandTextView(Context context) {
+	public STextView(Context context) {
 		super(context);
 		init(context, null);
         this.context = context;
 		setContentText(getText().toString());
 	}
 	
-	public ExpandTextView(Context context, AttributeSet attrs) {
+	public STextView(Context context, AttributeSet attrs) {
 		super(context, attrs);
         this.context = context;
 		if (attrs != null) {
@@ -64,7 +64,7 @@ public class ExpandTextView extends TextView {
 		}
 	}
 	
-	public ExpandTextView(Context context, AttributeSet attrs, int defStyleAttr) {
+	public STextView(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
         this.context = context;
 		if (attrs != null) {

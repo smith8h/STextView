@@ -24,7 +24,7 @@
         android:textColor="@color/txt"
         android:onClick="check"/>
     
-    <smith.lib.views.expandtextview.ExpandTextView
+    <smith.lib.views.tv.STextView
         android:id="@+id/etv"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"

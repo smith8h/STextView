@@ -8,9 +8,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 import com.itsaky.androidide.logsender.LogSender;
-import smith.lib.views.expandtextview.TextClickListener;
-import smith.lib.views.expandtextview.ExpandTextView;
-import smith.lib.views.expandtextview.MentionsClickListener;
+import smith.lib.views.tv.STextView;
 
 public class MainActivity extends AppCompatActivity {
     
@@ -24,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
     
     public void check(View v) {
         EditText et = findViewById(R.id.et);
-        ExpandTextView etv = findViewById(R.id.etv);
+        STextView etv = findViewById(R.id.etv);
         
         etv.setContentText(et.getText().toString());
     }
