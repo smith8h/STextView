@@ -8,6 +8,7 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StrikethroughSpan;
 import android.text.style.TypefaceSpan;
+import android.text.style.UnderlineSpan;
 import android.util.AttributeSet;
 import android.widget.TextView;
 import android.view.View;
@@ -28,17 +29,27 @@ import java.util.regex.Pattern;
 public class STextView extends TextView {
 	
 	// >>>>>>>> variables
+    public static final int TYPE_MENTION = 0;
+    public static final int TYPE_HASHTAG = 1;
+    
 	private int textMaxLength = 110;
 	private int textColor = 0xFF999999;
     private int mentionsColor = 0xFF999999;
-    private String showMoreText = "More", showLessText = "Less";
-	private boolean isExpanded = false;
+    
+    private String showMoreText = "More";
+    private String showLessText = "Less";
+	private String expandedText, collapsedText, originalText;
+	
+    private boolean isExpanded = false;
     private boolean isEnabledExpands = false;
-    private float expandBtnSize = 0.9f;
-    private String expandedText, collapsedText, originalText;
-	private SpannableStringBuilder expandedTextSpannable, collapsedTextSpannable;
-	private TextClickListener eListener;
+    
+    private float expandBtnSize = 0.88f;
+    
+    private SpannableStringBuilder expandedTextSpannable, collapsedTextSpannable;
+	
+    private TextClickListener eListener;
 	private MentionsClickListener mListener;
+    
     private Context context;
     
     
@@ -238,21 +249,20 @@ public class STextView extends TextView {
         List<StyleSpan> spans = new ArrayList<>();
         List<TypefaceSpan> spans2 = new ArrayList<>();
         List<StrikethroughSpan> spans3 = new ArrayList<>();
+        List<UnderlineSpan> spans4 = new ArrayList<>();
         
         // ** bold **
         Pattern p = Pattern.compile("(\\*\\*)(.*?)(\\*\\*)");
         Matcher matcher = p.matcher(text);
         while (matcher.find()) { markdown(spans, ssb, matcher, Typeface.BOLD); }
         
-        // _* bolt italic *_
-        p = Pattern.compile("(\\_\\*)(.*?)(\\*\\_)");
+        // -- underline --
+        p = Pattern.compile("(\\-\\-)(.*?)(\\-\\-)");
         matcher = p.matcher(text);
-        while (matcher.find()) { markdown(spans, ssb, matcher, Typeface.BOLD_ITALIC); }
-        
-        // *_ bold italic _*
-        p = Pattern.compile("(\\*\\_)(.*?)(\\_\\*)");
-        matcher = p.matcher(text);
-        while (matcher.find()) { markdown(spans, ssb, matcher, Typeface.BOLD_ITALIC); }
+        while (matcher.find()) {
+            UnderlineSpan us = new UnderlineSpan();
+            ssb.setSpan(us, matcher.start(), matcher.end(), 0);
+        }
         
         // __ italic __
         p = Pattern.compile("(\\_\\_)(.*?)(\\_\\_)");
@@ -279,7 +289,7 @@ public class STextView extends TextView {
             spans3.add(span);
         }
         
-        // delete **__~~``
+        // delete **__~~``--
         for (StyleSpan span : spans) {
 	        ssb.replace(ssb.getSpanStart(span), ssb.getSpanStart(span) + 2, "");
 	        ssb.replace(ssb.getSpanEnd(span) - 2, ssb.getSpanEnd(span), "");
@@ -289,6 +299,10 @@ public class STextView extends TextView {
 	        ssb.replace(ssb.getSpanEnd(span) - 1, ssb.getSpanEnd(span), "");
         }
         for (StrikethroughSpan span : spans3) {
+            ssb.replace(ssb.getSpanStart(span), ssb.getSpanStart(span) + 2, "");
+	        ssb.replace(ssb.getSpanEnd(span) - 2, ssb.getSpanEnd(span), "");
+        }
+        for (UnderlineSpan span : spans4) {
             ssb.replace(ssb.getSpanStart(span), ssb.getSpanStart(span) + 2, "");
 	        ssb.replace(ssb.getSpanEnd(span) - 2, ssb.getSpanEnd(span), "");
         }
@@ -340,10 +354,10 @@ public class STextView extends TextView {
 					Spannable sp = (Spannable)tv.getText();
 					int start = sp.getSpanStart(this);
 				    int end = sp.getSpanEnd(this);
-                    String type = "";
-                    if (sp.subSequence(start, start+1).equals("@")) type = "mention";
-                    else type = "hashtag";
-                    if (mListener != null) mListener.onClick(sp.subSequence(start,end).toString(), type);
+                    if (mListener != null) {
+                        if (sp.subSequence(start, start+1).equals("@")) mListener.onClick(sp.subSequence(start,end).toString(), TYPE_MENTION);
+                        else mListener.onClick(sp.subSequence(start,end).toString(), TYPE_HASHTAG);
+                    }
 				}
 			}
 		}
