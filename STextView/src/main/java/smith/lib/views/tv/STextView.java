@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.style.BackgroundColorSpan;
+import android.text.style.ForegroundColorSpan;
 import android.text.style.StrikethroughSpan;
 import android.text.style.TypefaceSpan;
 import android.text.style.UnderlineSpan;
@@ -322,30 +324,6 @@ public class STextView extends TextView {
         spans.add(span);
     }
     
-    private class MonoClickSpan extends ClickableSpan {
-        @Override public void onClick(View view){
-			if(view instanceof TextView){
-				TextView tv = (TextView)view;
-			    if(tv.getText() instanceof Spannable){
-					Spannable sp = (Spannable)tv.getText();
-					int start = sp.getSpanStart(this);
-				    int end = sp.getSpanEnd(this);
-                    String text = sp.subSequence(start, end).toString();
-                    ((ClipboardManager)context.getSystemService(Context.CLIPBOARD_SERVICE))
-                            .setPrimaryClip(ClipData.newPlainText("clipboard", text));
-                    Toast.makeText(context, context.getString(R.string.copied_span_click), Toast.LENGTH_SHORT).show();
-				}
-			}
-		}
-        
-		@Override public void updateDrawState(TextPaint ds) {
-            super.updateDrawState(ds);
-            ds.setUnderlineText(false);
-            ds.setColor(textColor);
-            ds.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL));
-	    }
-    }
-    
     private class ProfileSpan extends ClickableSpan {
 		@Override public void onClick(View view){
 			if(view instanceof TextView){
@@ -369,6 +347,30 @@ public class STextView extends TextView {
 			ds.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
 	    }
 	}
+    
+    private class MonoClickSpan extends ClickableSpan {
+        @Override public void onClick(View view){
+			if(view instanceof TextView){
+				TextView tv = (TextView)view;
+			    if(tv.getText() instanceof Spannable){
+					Spannable sp = (Spannable)tv.getText();
+					int start = sp.getSpanStart(this);
+				    int end = sp.getSpanEnd(this);
+                    String text = sp.subSequence(start, end).toString();
+                    ((ClipboardManager)context.getSystemService(Context.CLIPBOARD_SERVICE))
+                            .setPrimaryClip(ClipData.newPlainText("clipboard", text));
+                    Toast.makeText(context, context.getString(R.string.copied_span_click), Toast.LENGTH_SHORT).show();
+				}
+			}
+		}
+        
+		@Override public void updateDrawState(TextPaint ds) {
+            super.updateDrawState(ds);
+            ds.setUnderlineText(false);
+            ds.setColor(textColor);
+            ds.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL));
+	    }
+    }
 	
 	ClickableSpan expandButtonsClickSpan = new ClickableSpan() {
 		@Override public void onClick(View v) {
