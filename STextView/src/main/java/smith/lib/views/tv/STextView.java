@@ -5,6 +5,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
@@ -252,6 +253,7 @@ public class STextView extends TextView {
         List<TypefaceSpan> spans2 = new ArrayList<>();
         List<StrikethroughSpan> spans3 = new ArrayList<>();
         List<UnderlineSpan> spans4 = new ArrayList<>();
+        List<SpoilerClickSpan> spans5 = new ArrayList<>();
         
         // ** bold **
         Pattern p = Pattern.compile("(\\*\\*)(.*?)(\\*\\*)");
@@ -264,6 +266,7 @@ public class STextView extends TextView {
         while (matcher.find()) {
             UnderlineSpan us = new UnderlineSpan();
             ssb.setSpan(us, matcher.start(), matcher.end(), 0);
+            spans4.add(us);
         }
         
         // __ italic __
@@ -276,7 +279,7 @@ public class STextView extends TextView {
         matcher = p.matcher(text);
         while (matcher.find()) { 
             TypefaceSpan span = new TypefaceSpan(Typeface.MONOSPACE);
-            MonoClickSpan cSpan = new MonoClickSpan();
+            MonospaceClickSpan cSpan = new MonospaceClickSpan();
             ssb.setSpan(span, matcher.start(), matcher.end(), 0);
             ssb.setSpan(cSpan, matcher.start(), matcher.end(), 0);
             spans2.add(span);
@@ -291,7 +294,22 @@ public class STextView extends TextView {
             spans3.add(span);
         }
         
-        // delete **__~~``--
+        // spoiler
+        p = Pattern.compile("(\\|\\|)(.*?)(\\|\\|)");
+        matcher = p.matcher(text);
+        while (matcher.find()) {
+            BackgroundColorSpan bgs = new BackgroundColorSpan(textColor);
+            ForegroundColorSpan fgs = new ForegroundColorSpan(textColor);
+            int start = matcher.start();
+            int end = matcher.end() - 4;
+            SpoilerClickSpan scs = new SpoilerClickSpan(bgs, fgs, this, start, end);
+            ssb.setSpan(scs, matcher.start(), matcher.end(), 0);
+            ssb.setSpan(bgs, matcher.start(), matcher.end(), 0);
+            ssb.setSpan(fgs, matcher.start(), matcher.end(), 0);
+            spans5.add(scs);
+        }
+        
+        // delete **__~~``--||
         for (StyleSpan span : spans) {
 	        ssb.replace(ssb.getSpanStart(span), ssb.getSpanStart(span) + 2, "");
 	        ssb.replace(ssb.getSpanEnd(span) - 2, ssb.getSpanEnd(span), "");
@@ -308,6 +326,10 @@ public class STextView extends TextView {
             ssb.replace(ssb.getSpanStart(span), ssb.getSpanStart(span) + 2, "");
 	        ssb.replace(ssb.getSpanEnd(span) - 2, ssb.getSpanEnd(span), "");
         }
+        for (SpoilerClickSpan span : spans5) {
+            ssb.replace(ssb.getSpanStart(span), ssb.getSpanStart(span) + 2, "");
+            ssb.replace(ssb.getSpanEnd(span) - 2, ssb.getSpanEnd(span), "");
+        }
         
         // mentions & hashtags
         p = Pattern.compile("(?<![^\\s])(([@]{1}|[#]{1})([A-Za-z0-9_-]\\.?)+)(?![^\\s,])");
@@ -322,6 +344,43 @@ public class STextView extends TextView {
         StyleSpan span = new StyleSpan(mark);
 	    ssb.setSpan(span, matcher.start(), matcher.end(), 0);
         spans.add(span);
+    }
+    
+    private class SpoilerClickSpan extends ClickableSpan {
+        
+        BackgroundColorSpan bgs;
+        ForegroundColorSpan fgs;
+        STextView stv;
+        int start, end;
+        
+        SpoilerClickSpan(BackgroundColorSpan bgs, ForegroundColorSpan fgs, STextView stv, int start, int end) {
+            this.bgs = bgs;
+            this.fgs = fgs;
+            this.stv = stv;
+            this.start = start;
+            this.end = end;
+        }
+        
+        @Override public void onClick(View v) {
+            if (((TextView)v).getText() instanceof SpannableString) {
+                SpannableString ssb = (SpannableString)((TextView)v).getText();
+                
+                ssb.removeSpan(bgs);
+                ssb.removeSpan(bgs);
+                ssb.removeSpan(this);
+                
+                fgs = new ForegroundColorSpan(stv.getCurrentTextColor());
+                ssb.setSpan(fgs, start, end, 0);
+                setText(ssb);
+            }
+        }
+        
+        @Override public void updateDrawState(TextPaint ds) {
+            super.updateDrawState(ds);
+            ds.setUnderlineText(false);
+            ds.setColor(stv.getCurrentTextColor());
+        }
+                
     }
     
     private class ProfileSpan extends ClickableSpan {
@@ -348,7 +407,7 @@ public class STextView extends TextView {
 	    }
 	}
     
-    private class MonoClickSpan extends ClickableSpan {
+    private class MonospaceClickSpan extends ClickableSpan {
         @Override public void onClick(View view){
 			if(view instanceof TextView){
 				TextView tv = (TextView)view;
