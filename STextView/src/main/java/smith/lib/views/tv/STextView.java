@@ -156,6 +156,10 @@ public class STextView extends TextView {
 	public void setMaxToExpand(int maxLength) {
 		textMaxLength = maxLength;
 	}
+    
+    public int getMaxToExpand() {
+        return textMaxLength;
+    }
 	
 	public void setExpandTextColor(int color) {
 		textColor = color;
@@ -172,6 +176,10 @@ public class STextView extends TextView {
     
     public void setExpandsEnabled(boolean clickable) {
         isEnabledExpands = clickable;
+    }
+    
+    public boolean isExpandsEnabled() {
+        return isEnabledExpands;
     }
     
     public void setExpanded(boolean expand) {
