@@ -18,13 +18,16 @@
   - [**Java Implementation**](#Java-Implementation)
   - [**Markdown Usage**](#markdown-text)
 - [**Donations :heart:**](#donations-)
-<br/>
-<p align="center">
-<img src="https://te.legra.ph/file/da8f1b95c7c4a842f3294.jpg" style="width: 83%;"/><br/>
-</p>
+
 <br/>
 
-___
+<p align="center">
+    <img src="https://te.legra.ph/file/999fd5754f931bfb75594.jpg" style="width: 40%;"/>  
+    <img src="https://te.legra.ph/file/4b49fd15fd87d3556075d.jpg" style="width: 40%;"/>
+</p>
+
+<br/>
+
 # Setup 📲
 > **Step 1.** Add the JitPack repository to your build file.</br>
 Add it in your root build.gradle at the end of repositories:

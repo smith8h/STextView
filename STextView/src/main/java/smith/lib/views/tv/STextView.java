@@ -270,7 +270,7 @@ public class STextView extends TextView {
         
         // -- underline --
         p = Pattern.compile("(\\-\\-)(.*?)(\\-\\-)");
-        matcher = p.matcher(text);
+        matcher = p.matcher(ssb);
         while (matcher.find()) {
             UnderlineSpan us = new UnderlineSpan();
             ssb.setSpan(us, matcher.start(), matcher.end(), 0);
@@ -279,12 +279,12 @@ public class STextView extends TextView {
         
         // __ italic __
         p = Pattern.compile("(\\_\\_)(.*?)(\\_\\_)");
-        matcher = p.matcher(text);
+        matcher = p.matcher(ssb);
         while (matcher.find()) { markdown(spans, ssb, matcher, Typeface.ITALIC); }
         
         // ` monospace `
         p = Pattern.compile("(\\`)(.*?)(\\`)");
-        matcher = p.matcher(text);
+        matcher = p.matcher(ssb);
         while (matcher.find()) { 
             TypefaceSpan span = new TypefaceSpan(Typeface.MONOSPACE);
             MonospaceClickSpan cSpan = new MonospaceClickSpan();
@@ -295,7 +295,7 @@ public class STextView extends TextView {
         
         // ~~ strike through ~~
         p = Pattern.compile("(\\~\\~)(.*?)(\\~\\~)");
-        matcher = p.matcher(text);
+        matcher = p.matcher(ssb);
         while (matcher.find()) { 
             StrikethroughSpan span = new StrikethroughSpan();
             ssb.setSpan(span, matcher.start(), matcher.end(), 0);
@@ -304,13 +304,11 @@ public class STextView extends TextView {
         
         // spoiler
         p = Pattern.compile("(\\|\\|)(.*?)(\\|\\|)");
-        matcher = p.matcher(text);
+        matcher = p.matcher(ssb);
         while (matcher.find()) {
             BackgroundColorSpan bgs = new BackgroundColorSpan(textColor);
             ForegroundColorSpan fgs = new ForegroundColorSpan(textColor);
-            int start = matcher.start();
-            int end = matcher.end() - 4;
-            SpoilerClickSpan scs = new SpoilerClickSpan(bgs, fgs, this, start, end);
+            SpoilerClickSpan scs = new SpoilerClickSpan(bgs, fgs);
             ssb.setSpan(scs, matcher.start(), matcher.end(), 0);
             ssb.setSpan(bgs, matcher.start(), matcher.end(), 0);
             ssb.setSpan(fgs, matcher.start(), matcher.end(), 0);
@@ -358,27 +356,21 @@ public class STextView extends TextView {
         
         BackgroundColorSpan bgs;
         ForegroundColorSpan fgs;
-        STextView stv;
-        int start, end;
         
-        SpoilerClickSpan(BackgroundColorSpan bgs, ForegroundColorSpan fgs, STextView stv, int start, int end) {
+        SpoilerClickSpan(BackgroundColorSpan bgs, ForegroundColorSpan fgs) {
             this.bgs = bgs;
             this.fgs = fgs;
-            this.stv = stv;
-            this.start = start;
-            this.end = end;
         }
         
         @Override public void onClick(View v) {
             if (((TextView)v).getText() instanceof SpannableString) {
                 SpannableString ssb = (SpannableString)((TextView)v).getText();
-                
-                ssb.removeSpan(bgs);
+                fgs = new ForegroundColorSpan(getCurrentTextColor());
+                int start = ssb.getSpanStart(this);
+                int end = ssb.getSpanEnd(this);
+                ssb.setSpan(fgs, start, end, 0);
                 ssb.removeSpan(bgs);
                 ssb.removeSpan(this);
-                
-                fgs = new ForegroundColorSpan(stv.getCurrentTextColor());
-                ssb.setSpan(fgs, start, end, 0);
                 setText(ssb);
             }
         }
@@ -386,24 +378,21 @@ public class STextView extends TextView {
         @Override public void updateDrawState(TextPaint ds) {
             super.updateDrawState(ds);
             ds.setUnderlineText(false);
-            ds.setColor(stv.getCurrentTextColor());
+            ds.setColor(getCurrentTextColor());
         }
                 
     }
     
     private class ProfileSpan extends ClickableSpan {
-		@Override public void onClick(View view){
-			if(view instanceof TextView){
-				TextView tv = (TextView)view;
-			    if(tv.getText() instanceof Spannable){
-					Spannable sp = (Spannable)tv.getText();
-					int start = sp.getSpanStart(this);
-				    int end = sp.getSpanEnd(this);
-                    if (mListener != null) {
-                        if (sp.subSequence(start, start+1).equals("@")) mListener.onClick(sp.subSequence(start,end).toString(), TYPE_MENTION);
-                        else mListener.onClick(sp.subSequence(start,end).toString(), TYPE_HASHTAG);
-                    }
-				}
+		@Override public void onClick(View v){
+			if(((TextView)v).getText() instanceof Spannable){
+				Spannable sp = (Spannable)((TextView)v).getText();
+				int start = sp.getSpanStart(this);
+			    int end = sp.getSpanEnd(this);
+                if (mListener != null) {
+                    if (sp.subSequence(start, start+1).equals("@")) mListener.onClick(sp.subSequence(start,end).toString(), TYPE_MENTION);
+                    else mListener.onClick(sp.subSequence(start,end).toString(), TYPE_HASHTAG);
+                }
 			}
 		}
         
@@ -416,26 +405,22 @@ public class STextView extends TextView {
 	}
     
     private class MonospaceClickSpan extends ClickableSpan {
-        @Override public void onClick(View view){
-			if(view instanceof TextView){
-				TextView tv = (TextView)view;
-			    if(tv.getText() instanceof Spannable){
-					Spannable sp = (Spannable)tv.getText();
-					int start = sp.getSpanStart(this);
-				    int end = sp.getSpanEnd(this);
-                    String text = sp.subSequence(start, end).toString();
-                    ((ClipboardManager)context.getSystemService(Context.CLIPBOARD_SERVICE))
-                            .setPrimaryClip(ClipData.newPlainText("clipboard", text));
-                    Toast.makeText(context, context.getString(R.string.copied_span_click), Toast.LENGTH_SHORT).show();
-				}
+        @Override public void onClick(View v){
+			if(((TextView)v).getText() instanceof Spannable){
+				Spannable sp = (Spannable)((TextView)v).getText();
+		    	int start = sp.getSpanStart(this);
+			    int end = sp.getSpanEnd(this);
+                String text = sp.subSequence(start, end).toString();
+                ((ClipboardManager)context.getSystemService(Context.CLIPBOARD_SERVICE))
+                    .setPrimaryClip(ClipData.newPlainText("clipboard", text));
+                Toast.makeText(context, context.getString(R.string.copied_span_click), Toast.LENGTH_SHORT).show();
 			}
 		}
         
 		@Override public void updateDrawState(TextPaint ds) {
             super.updateDrawState(ds);
             ds.setUnderlineText(false);
-            ds.setColor(textColor);
-            ds.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL));
+            ds.setColor(getCurrentTextColor());
 	    }
     }
 	
